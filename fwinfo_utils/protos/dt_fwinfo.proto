@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+package dt_fwinfo;
+
+enum Command {
+    READ_VERSION = 0;
+    READ_FIRMWARE = 1;
+    READ_DEVICE_INFO = 2;
+}
+
+message CommandRequest {
+    Command cmd = 1;
+}
+
+message CommandResponse {
+    oneof msg {
+        ApplicationVersion version = 1;
+        FirmwareInfo fw_info = 2;
+        DeviceInfo dev_info = 3;
+    }
+}
+
+message CommandMessage {
+    oneof msg {
+        CommandRequest req = 1;
+        CommandResponse res = 2;
+    }
+}
+
+enum MCUBootSlotInfo {
+    S0 = 0;
+    S1 = 1;
+}
+
+message MCUBootVersion {
+    int32 version = 1;
+    MCUBootSlotInfo slot_info = 2;
+}
+
+message ApplicationVersion {
+    optional string version = 1;
+    bytes hash = 2;
+    optional MCUBootVersion mcuboot_version = 3;
+    optional ModemVersion modem_version = 4;
+    optional string channel = 5;
+}
+
+message ModemVersion {
+    string version = 1;
+}
+
+message FirmwareInfo {
+    ApplicationVersion primary_version = 1;
+    optional ApplicationVersion secondary_version = 2;
+    optional ApplicationVersion tertiary_version = 3;
+}
+
+enum DeviceType {
+    DT_MINI = 0;
+    DT_BEACON = 1;
+    DT_DRI = 2;
+    DT_NDRI = 3;
+    DT_BS = 4;
+    DT_BEACON2 = 5;
+    DT_MINI2 = 6;
+    DT_MINI_4G = 7;
+    DT_DRI_GNSS = 8;
+    DT_RIDER = 9;
+    DT_RECEIVER = 10;
+}
+
+message PartitionStorageInfo {
+    string path = 1;
+    uint32 free_size = 2; /* Size of the free space on the partition in bytes */
+    uint32 total_size = 3; /* Total size of the partition in bytes */
+}
+
+/* Structure dedicated for future extension when secondary mcu storage will be needed */
+message DeviceStorageInfo {
+    /* For now always /storage */
+    optional PartitionStorageInfo primary_storage = 1;
+}
+
+message DeviceInfo {
+    DeviceType type = 1;
+    uint32 revision = 2;
+    uint64 uniq_id = 3;
+    optional string imei = 4;
+    optional string iccid = 5;
+    string serial_number = 6;
+
+    uint32 sub_revision = 7;
+    uint32 variant1 = 8;
+    uint32 variant2 = 9;
+    uint32 region_spec = 10;
+
+    optional DeviceStorageInfo storage = 11;
+}
+
+message DeviceInfoBrief {
+    DeviceType type = 1;
+    uint32 revision = 2;
+    bytes serial_number = 6;
+}
